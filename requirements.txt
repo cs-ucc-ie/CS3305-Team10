@@ -1,4 +1,15 @@
-dlib==19.24.0
-face-recognition==1.3.0
-numpy==1.24.2
-Pillow==9.4.0
+Some of these will fail, if so, please download the wheel first
+
+pip install face-recognition
+pip install numpy
+pip install pillow
+pip install dlib
+pip install opencv-python
+
+***for dlib wheel
+Follow instructions on downloading the wheel:
+https://github.com/z-mahmud22/Dlib_Windows_Python3.x
+Py 3.11 needed
+then type this into terminal
+python -m pip install dlib-19.24.1-cp311-cp311-win_amd64.whl
+
