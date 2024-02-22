@@ -1,50 +1,111 @@
-import cv2
 import numpy as np
+import cv2
+import dlib
+from PIL import ImageGrab
+import time
 import face_recognition
 
-# Dictionary to store associations between recognized faces and names
-face_names = {}
+# Load the pre-trained face cascade classifier
+face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
-# Function to recognize faces and associate them with names
-def recognize_faces(frame):
-    rgb_frame = frame[:, :, ::-1]  # Convert BGR to RGB
+# Load the pre-trained eye cascade classifier
+eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_eye.xml')
 
-    # Find all face locations in the current frame
-    face_locations = face_recognition.face_locations(rgb_frame)
-    # Find face encodings for each face in the current frame
-    face_encodings = face_recognition.face_encodings(rgb_frame, face_locations)
+# Load the facial landmark predictor
+predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
 
-    for face_encoding, (top, right, bottom, left) in zip(face_encodings, face_locations):
-        # Compare the current face encoding with known face encodings
-        matches = face_recognition.compare_faces(list(face_names.keys()), face_encoding)
+def update_engagement(current_engagement, expressions):
+    # Define engagement levels for different expressions
+    engagement_levels = {
+        "neutral": 50,   # Neutral expression indicates moderate engagement
+        "smile": 100,    # Smiling indicates high engagement
+        "nod": 80,       # Nodding indicates moderate-high engagement
+        "frown": 20,     # Frowning indicates low engagement
+        "tired": 30      # Tired or expressionless face indicates low engagement
+        # Add more expressions and corresponding engagement levels as needed
+    }
 
-        name = "Unknown"
-        if True in matches:
-            # Find the index of the matched face
-            match_index = matches.index(True)
-            # Get the name associated with the matched face
-            name = list(face_names.values())[match_index]
+    # Define time-based factors for decreasing engagement
+    time_factors = {
+        "bored": -10  # If the user looks bored for too long, decrease engagement
+        # Add more time-based factors as needed
+    }
 
-        # Display the name near the face
-        cv2.putText(frame, name, (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 255, 0), 2)
-        # Draw a rectangle around the face
-        cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)
+    # Calculate weighted average of engagement levels based on observed expressions
+    total_weight = 0
+    for expression, duration in expressions.items():
+        weight = engagement_levels.get(expression, 0) * duration
+        current_engagement += weight  # Update current engagement with weighted contribution
+        total_weight += duration
 
-    return frame
+    # Apply time-based factors to adjust engagement
+    for factor, duration in time_factors.items():
+        if factor in expressions:
+            current_engagement += duration  # Apply time-based factor to engagement
 
-# Main function to capture screen and perform face recognition
+    if total_weight > 0:
+        current_engagement /= total_weight  # Normalize by total duration
+    else:
+        current_engagement = 50  # Default to 50% if no expressions detected
+
+    # Ensure engagement level stays within range [0, 100]
+    current_engagement = max(0, min(100, current_engagement))
+
+    return round(current_engagement)  # Round to the nearest whole number
+
+
+def print_engagement_update(user_engagement, face_idx):
+    print(f"Face {face_idx} - Updated Engagement Percentage: {user_engagement}%")
+    return user_engagement
+
 def main():
-    screen_capture = cv2.VideoCapture(0)  # Change to the appropriate screen capture device index
-
+    user_engagement = {idx: 50 for idx in range(1, 6)}  # Initial engagement level for each face (starts at 50%)
+    
     while True:
-        ret, frame = screen_capture.read()
-        frame = recognize_faces(frame)
-        cv2.imshow('Screen Capture', frame)
+        # Capture the screen
+        frame = np.array(ImageGrab.grab(bbox=(0, 40, 1200, 1200)))
+        screen = frame.copy()  # Create a copy for drawing
 
+        # Convert the frame to grayscale for face detection
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+        # Detect faces in the frame
+        faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+
+        # Store facial encodings and landmarks for each detected face
+        face_encodings = []
+        face_landmarks = []
+
+        for idx, (x, y, w, h) in enumerate(faces, start=1):
+        # Draw bounding box around the face
+            cv2.rectangle(screen, (x, y), (x+w, y+h), (255, 0, 0), 2)
+
+            # Extract the region of interest (ROI) for the face
+            roi_gray = gray[y:y+h, x:x+w]
+            roi_color = frame[y:y+h, x:x+w]
+
+            # Perform facial landmark detection
+            face_image = cv2.cvtColor(roi_color, cv2.COLOR_BGR2RGB)  # Convert to RGB
+            face_landmarks = face_recognition.face_landmarks(face_image)
+
+            # Immediate calculation on expressions observed
+            expressions_observed = {"neutral": 5, "smile": 3, "nod": 2}
+            if idx not in user_engagement:
+                user_engagement[idx] = 50  # Initialize engagement for new face
+            user_engagement[idx] = update_engagement(user_engagement[idx], expressions_observed)
+            print_engagement_update(user_engagement[idx], idx)
+
+        # Display the frame
+        cv2.imshow('Face Detection', screen)
+
+        # Check for key press to exit
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
-    screen_capture.release()
+        # Wait for 2 seconds
+        time.sleep(2)
+
+    # Close all OpenCV windows
     cv2.destroyAllWindows()
 
 if __name__ == "__main__":
