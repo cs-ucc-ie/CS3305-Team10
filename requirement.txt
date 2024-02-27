@@ -1,0 +1,8 @@
+Necessary Depedencies:
+
+pip install opencv-python
+pip install deepface
+
+
+
+
