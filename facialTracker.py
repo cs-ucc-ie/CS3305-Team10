@@ -1,91 +1,80 @@
 import cv2
-import numpy as np
-import face_recognition
-import mss
-from mss import mss
+from deepface import DeepFace
 
-# Dictionary to store associations between recognized faces and names
-face_names = {}
+# Load pre-trained deep learning model for facial expression recognition
+model = DeepFace.build_model('Emotion')
 
-# Function to recognize faces and associate them with names
-def recognize_faces(frame):
-    rgb_frame = frame[:, :, ::-1]  # Convert BGR to RGB
+def update_engagement(expressions):
+    # Define weights for each facial expression
+    weights = {
+        "happy": 1,
+        "sad": -2,
+        "angry": -2,
+        "surprise": 1,
+        "fear": -1,
+        "neutral": 0
+        # Add more expressions and weights as needed
+    }
 
-    # Find all face locations in the current frame
-    face_locations = face_recognition.face_locations(rgb_frame)
-    # Find face encodings for each face in the current frame
-    face_encodings = face_recognition.face_encodings(rgb_frame, face_locations)
+    # Calculate weighted sum of expressions
+    engagement = sum(weights[expr] * expressions.get(expr, 0) for expr in weights.keys())
 
-    expressions = []
+    # Normalize engagement level to the range [-100, 100]
+    engagement = max(-100, min(100, engagement))
 
-    for face_encoding, (top, right, bottom, left) in zip(face_encodings, face_locations):
-        # Compare the current face encoding with known face encodings
-        matches = face_recognition.compare_faces(list(face_names.keys()), face_encoding)
+    # Map engagement level to a percentage between 0 and 100, with neutral set to 50%
+    engagement_percent = round((engagement + 100) / 2 if engagement != 0 else 50, 1)
 
-        name = "Unknown"
-        if True in matches:
-            # Find the index of the matched face
-            match_index = matches.index(True)
-            # Get the name associated with the matched face
-            name = list(face_names.values())[match_index]
+    return engagement_percent
 
-        # Draw a rectangle around the face
-        cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)
-
-        # Calculate facial expression
-        face_landmarks = face_recognition.face_landmarks(rgb_frame, [face_locations[0]])[0]
-        mouth = face_landmarks['top_lip'] + face_landmarks['bottom_lip']
-        mouth_height = max(mouth, key=lambda point: point[1])[1] - min(mouth, key=lambda point: point[1])[1]
-
-        # Define expression categories based on mouth height
-        if mouth_height < 5:
-            expression = "Neutral"
-        elif mouth_height < 15:
-            expression = "Mildly Interested"
-        else:
-            expression = "Enthusiastic"
-
-        expressions.append(expression)
-
-        # Display the name and expression near the face
-        cv2.putText(frame, f"Name: {name}", (left, bottom + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-        cv2.putText(frame, f"Expression: {expression}", (left, bottom + 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-
-    return frame, expressions
-
-# Function to calculate enthusiasm level based on expressions
-def calculate_enthusiasm(expressions):
-    total_faces = len(expressions)
-    enthusiastic_faces = expressions.count("Enthusiastic")
-    enthusiasm_percentage = (enthusiastic_faces / total_faces) * 100 if total_faces > 0 else 0
-    return enthusiasm_percentage
-
-# Main function to capture screen and perform face recognition
 def main():
-    with mss() as sct:
-        while True:
-            # Capture the screen
-            monitor = {"top": 0, "left": 0, "width": 1920, "height": 1080}  # Adjust resolution as needed
-            frame = np.array(sct.grab(monitor))
+    cap = cv2.VideoCapture(0)
 
-            # Convert the frame to RGB format
-            rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    if not cap.isOpened():
+        print("Error: Failed to open webcam.")
+        return
 
-            frame, expressions = recognize_faces(rgb_frame)
-            enthusiasm_percentage = calculate_enthusiasm(expressions)
+    while True:
+        ret, frame = cap.read()
 
-            # Output expressions and enthusiasm percentage
-            print("Expressions:", expressions)
-            print("Enthusiasm Percentage:", enthusiasm_percentage)
+        if not ret:
+            print("Error: Failed to capture frame.")
+            break
 
-            cv2.imshow('Screen Capture', frame)
+        # Detect facial expressions using DeepFace
+        results = DeepFace.analyze(frame, actions=['emotion'], enforce_detection=False)
 
-            # Check for user input to exit
-            key = cv2.waitKey(1)
-            if key == ord('q'):
-                break
+        # Initialize empty dictionary to store aggregated expressions
+        aggregated_expressions = {}
 
-        cv2.destroyAllWindows()
+        # Loop through results for each detected face
+        for result in results:
+            # Extract expressions and their probabilities
+            expressions = result['emotion']
+
+            # Aggregate expressions across all faces
+            for expr, prob in expressions.items():
+                if expr in aggregated_expressions:
+                    aggregated_expressions[expr] += prob
+                else:
+                    aggregated_expressions[expr] = prob
+
+        # Update user's engagement based on aggregated expressions
+        user_engagement = update_engagement(aggregated_expressions)
+
+        # Print engagement level
+        print("Engagement Level:", user_engagement)
+
+        # Display the frame
+        cv2.imshow('Facial Expression Recognition', frame)
+
+        # Check for key press to exit
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    # Release the webcam and close OpenCV windows
+    cap.release()
+    cv2.destroyAllWindows()
 
 if __name__ == "__main__":
     main()
