@@ -4,6 +4,7 @@ python 3.11
 
 pip install opencv-python
 pip install deepface
+pip install pyvirtualcam
 
 
 
