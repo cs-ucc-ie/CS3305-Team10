@@ -1,5 +1,7 @@
 import cv2
+import numpy as np
 from deepface import DeepFace
+import pyvirtualcam
 
 # Load pre-trained deep learning model for facial expression recognition
 model = DeepFace.build_model('Emotion')
@@ -7,10 +9,10 @@ model = DeepFace.build_model('Emotion')
 def update_engagement(expressions):
     # Define weights for each facial expression
     weights = {
-        "happy": 1,
+        "happy": 0.7,
         "sad": -2,
         "angry": -2,
-        "surprise": 1,
+        "surprise": 0.7,
         "fear": -1,
         "neutral": 0
         # Add more expressions and weights as needed
@@ -34,47 +36,82 @@ def main():
         print("Error: Failed to open webcam.")
         return
 
-    while True:
-        ret, frame = cap.read()
+    # Create virtual camera
+    try:
+        with pyvirtualcam.Camera(width=640, height=480, fps=30) as cam:
+            print(f'Using virtual camera: {cam.device}')
 
-        if not ret:
-            print("Error: Failed to capture frame.")
-            break
+            total_engagement = 0
+            count = 0
 
-        # Detect facial expressions using DeepFace
-        results = DeepFace.analyze(frame, actions=['emotion'], enforce_detection=False)
+            while True:
+                ret, frame = cap.read()
 
-        # Initialize empty dictionary to store aggregated expressions
-        aggregated_expressions = {}
+                if not ret:
+                    print("Error: Failed to capture frame.")
+                    break
 
-        # Loop through results for each detected face
-        for result in results:
-            # Extract expressions and their probabilities
-            expressions = result['emotion']
+                # Detect facial expressions using DeepFace
+                results = DeepFace.analyze(frame, actions=['emotion'], enforce_detection=False)
 
-            # Aggregate expressions across all faces
-            for expr, prob in expressions.items():
-                if expr in aggregated_expressions:
-                    aggregated_expressions[expr] += prob
+                # Check if any face is detected
+                if results:
+                    # Initialize total engagement for this frame
+                    frame_engagement = 0
+
+                    # Loop through results for each detected face
+                    for result in results:
+                        # Extract expressions and their probabilities
+                        expressions = result['emotion']
+
+                        # Calculate engagement for this face
+                        face_engagement = update_engagement(expressions)
+
+                        # Accumulate total engagement for this frame
+                        frame_engagement += face_engagement
+
+                        # Draw bounding box around the detected face
+                        x, y, w, h = result['box']
+                        cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
+
+                    # Calculate average engagement for this frame
+                    average_engagement = frame_engagement / len(results)
+
+                    # Print average engagement for this frame
+                    print("Average Engagement Level:", average_engagement)
+
+                    # Accumulate total engagement
+                    total_engagement += average_engagement
+                    count += 1
+
                 else:
-                    aggregated_expressions[expr] = prob
+                    print("No faces detected!")
 
-        # Update user's engagement based on aggregated expressions
-        user_engagement = update_engagement(aggregated_expressions)
+                # Resize frame to match virtual camera dimensions
+                frame = cv2.resize(frame, (cam.width, cam.height))
 
-        # Print engagement level
-        print("Engagement Level:", user_engagement)
+                # Send frame to virtual camera
+                cam.send(frame[..., ::-1])
 
-        # Display the frame
-        cv2.imshow('Facial Expression Recognition', frame)
+                # Check for key press to exit
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
 
-        # Check for key press to exit
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+    except Exception as e:
+        print("Error:", e)
 
     # Release the webcam and close OpenCV windows
     cap.release()
     cv2.destroyAllWindows()
 
+    # Calculate and print the average engagement if faces were detected
+    if count > 0:
+        average = total_engagement / count
+        print("The average engagement level for this meeting was:", int(average), "%")
+    else:
+        print("No faces detected in the meeting.")
+
+
 if __name__ == "__main__":
     main()
+
