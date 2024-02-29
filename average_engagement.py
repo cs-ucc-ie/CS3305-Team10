@@ -1,5 +1,14 @@
 import cv2
 from deepface import DeepFace
+import mysql.connector
+
+
+mydb = mysql.connector.connect(
+  host="cs1.ucc.ie",
+  user="facialrecognition2024",
+  password="caipu",
+  database="facialrecognition2024"
+)
 
 # Load pre-trained deep learning model for facial expression recognition
 
@@ -92,7 +101,30 @@ def main():
         print("The average engagement level for this meeting was:", int(average), "%")
     else:
         print("No faces detected in the meeting.")
+    return average
+
+def insert_avg_db(average):
+        
+        
+        mycursor = mydb.cursor()
+        
+        sql = "INSERT INTO customers (name, percentage) VALUES (%s, %s)"
+        val = ("pepe", int(average))
+        mycursor.execute(sql, val)
+        mydb.commit()
+
+        #show all the rows in the table
+        mycursor.execute("SELECT * FROM customers")
+
+        myresult = mycursor.fetchall()
+
+        for x in myresult:
+            print(x)
+
+
 
 
 if __name__ == "__main__":
-    main()
+    #main()
+    average_engagement = main()
+    insert_avg_db(average_engagement)
