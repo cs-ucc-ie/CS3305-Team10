@@ -5,6 +5,7 @@ import time
 from multiprocessing import Process, Queue
 import queue
 
+# Connect to DB
 mydb = mysql.connector.connect(
     host="cs1.ucc.ie",
     user="facialrecognition2024",
@@ -12,6 +13,7 @@ mydb = mysql.connector.connect(
     database="facialrecognition2024"
 )
 
+# Function to calculate the % of engagement
 def update_engagement(expressions):
     weights = {
         "happy": 1,
@@ -26,6 +28,7 @@ def update_engagement(expressions):
     engagement_percent = round((engagement + 100) / 2 if engagement != 0 else 50, 1)
     return engagement_percent
 
+# Function to regonise the user's face, takes in a queue for real-time insertion and deletion
 def facial_recognition(data_queue):
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
@@ -37,18 +40,20 @@ def facial_recognition(data_queue):
         if not ret:
             print("Error: Failed to capture frame.")
             break
-
+        # Using the DeepFace algorithm to analyse the face of the user
         results = DeepFace.analyze(frame, actions=['emotion'], enforce_detection=False)
 
+        # If face is detected, associate the expression with an emotion in the dictionary, and add the value of it to total_engagement
         if results:
             total_engagement = 0
             for result in results:
                 expressions = result['emotion']
                 face_engagement = update_engagement(expressions)
                 total_engagement += face_engagement
-            
+            # Calculate the average engagement
             average_engagement = total_engagement / len(results)
             if average_engagement:
+                # Put the figure in the queue
                 data_queue.put(average_engagement)
 
         # Display the frame
@@ -62,6 +67,7 @@ def facial_recognition(data_queue):
 
     cap.release()
 
+# Main function of the program
 def main():
     queue = Queue()
     p = Process(target=facial_recognition, args=(queue,))
@@ -73,6 +79,7 @@ def main():
 
     while True:
         try:
+            # Insert engagement scores into the array
             data = queue.get()
             average_engagement_array.append(data)
 
@@ -85,13 +92,14 @@ def main():
             break
 
     p.terminate()
-
+    # Calculate the average engagement based on all elements in the session's array
     average = sum(average_engagement_array) / len(average_engagement_array) if average_engagement_array else 0
     print("The average engagement level for this meeting was:", int(average), "%")
     if not average_engagement_array:
         print("No faces detected in the meeting.")
     return average
 
+# Put the average figure into the DB for user feedback
 def insert_avg_db(average):
     mycursor = mydb.cursor()
     sql = "INSERT INTO percentage (percentage) VALUE (%s)"

@@ -37,7 +37,7 @@ class AddNamePage(tk.Frame):
         button.pack()
 
     def run_name(self):
-        # Execute the facial expression recognition code using subprocess asynchronously
+        # Execute the facial expression recognition code using subprocess
         subprocess.Popen(["python", "add_name.py"])
 
 
