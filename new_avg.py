@@ -63,7 +63,7 @@ def facial_recognition(data_queue):
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
         
-        time.sleep(0.5)  # Move the delay outside the loop
+
 
     cap.release()
 
@@ -102,7 +102,7 @@ def main():
 # Put the average figure into the DB for user feedback
 def insert_avg_db(average):
     mycursor = mydb.cursor()
-    sql = "INSERT INTO percentage (percentage) VALUE (%s)"
+    sql = "INSERT INTO members (percentage) VALUE (%s)"
     val = (int(average),)
     mycursor.execute(sql, val)
     mydb.commit()

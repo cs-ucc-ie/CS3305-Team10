@@ -6,6 +6,8 @@ from multiprocessing import Process, Queue
 import subprocess
 import new_avg
 
+# Import modules from add_name.py
+from add_name import add_name
 
 # -------------------------- DEFINING GLOBAL VARIABLES -------------------------
 
@@ -13,7 +15,6 @@ selectionbar_color = '#ffffff'
 sidebar_color = '#91BDD2'
 header_color = '#91BDD2'
 visualisation_frame_color = "#ffffff"
-
 
 # ------------------------ MULTIPAGE FRAMES ------------------------------------
 
@@ -37,8 +38,10 @@ class Frame1(tk.Frame):
         self.canvas_widget.pack(expand=True, fill="both")
 
         # Create button for starting facial recognition
-        self.start_button = tk.Button(self, text="Start Facial Recognition", command=self.start_facial_recognition)
-        self.start_button.pack()
+        self.start_button = tk.Button(command=lambda: self.start_facial_recognition())
+        # Add button for adding a name
+        #self.add_name_button = tk.Button(self, text="Add Name", command=add_name)
+        #self.add_name_button.pack()
 
         # Label to display average engagement level
         self.avg_label = tk.Label(self, text="Average Engagement Level: ")
@@ -94,8 +97,6 @@ class Frame1(tk.Frame):
         # Schedule the next update after 1 second
         self.after(1000, self.update_from_queue)
 
-
-
 # ----------------------------- CUSTOM WIDGETS ---------------------------------
 
 class SidebarSubMenu(tk.Frame):
@@ -134,7 +135,6 @@ class SidebarSubMenu(tk.Frame):
                                         activebackground='#ffffff',
                                         )
             self.options[x].place(x=30, y=45 * (n + 1), anchor="w")
-
 
 class TkinterApp(tk.Tk):
     """
@@ -189,13 +189,10 @@ class TkinterApp(tk.Tk):
         self.submenu_frame.place(relx=0, rely=0.2, relwidth=1, relheight=0.85)
         submenu1 = SidebarSubMenu(self.submenu_frame,
                                   sub_menu_heading='MENU',
-                                  sub_menu_options=["See history", "Run application"],
+                                  sub_menu_options=["Run application"],
                                   )
-        submenu1.options["See history"].config(
-            command=lambda: self.show_frame(Frame1)  # connect to database
-        )
         submenu1.options["Run application"].config(
-            command=lambda: self.show_frame(Frame1)  # connect to database
+        command=lambda: self.frames[Frame1].start_facial_recognition()
         )
 
         submenu1.place(relx=0, rely=0.025, relwidth=1, relheight=0.3)
@@ -208,8 +205,7 @@ class TkinterApp(tk.Tk):
 
         self.frames = {}
 
-        for F in (Frame1,
-                  ):
+        for F in (Frame1,):
 
             frame = F(container, self)
             self.frames[F] = frame
@@ -230,6 +226,24 @@ class TkinterApp(tk.Tk):
         """
         frame = self.frames[cont]
         frame.tkraise()
+
+    def add_name_window(self):
+        """
+        Function to open the window for adding a name.
+        """
+        root = tk.Tk()
+        root.title("Name Window")
+
+        label = tk.Label(root, text="Enter your name:")
+        label.pack(pady=10)
+
+        entry = tk.Entry(root)
+        entry.pack(pady=10)
+
+        button = tk.Button(root, text="Add Name", command=lambda: add_name(entry.get()))
+        button.pack(pady=10)
+
+        #root.mainloop()
 
 
 if __name__ == "__main__":

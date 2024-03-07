@@ -13,7 +13,7 @@ def add_name():
 
 def save_to_database(name):
     try:
-        # Database connector
+        # Replace 'your_username', 'your_password', and 'your_database' with your MySQL credentials
         mydb = mysql.connector.connect(
             host="cs1.ucc.ie",
             user="facialrecognition2024",
@@ -24,7 +24,7 @@ def save_to_database(name):
         mycursor = mydb.cursor()
         
         # Execute an SQL query to insert the name into the 'names' table
-        query = "INSERT INTO costumers (name) VALUES (%s)"
+        query = "INSERT INTO members (name) VALUES (%s)"
         mycursor.execute(query, (name,))
         
         # Commit the changes and close the connection
