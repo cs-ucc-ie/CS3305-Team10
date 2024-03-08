@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- Basic -->
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <!-- Mobile Metas -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <!-- Site Metas -->
+  <meta name="keywords" content="" />
+  <meta name="description" content="" />
+  <meta name="author" content="" />
+
+  <title>eMOTIONS</title>
+
+
+  <!-- Bootstrap core CSS -->
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.css') }}" />
+  <!-- Font Awesome -->
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/font-awesome.min.css') }}" />
+  <!-- Custom styles for this template -->
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}" />
+  <!-- Responsive styles -->
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/responsive.css') }}" />
+
+
+</head>
+
+<body class="sub_page">
+
+  <div class="hero_area">
+    <!-- header section strats -->
+    <header class="header_section">
+      <div class="container-fluid">
+        <nav class="navbar navbar-expand-lg custom_nav-container ">
+          <a class="navbar-brand" href="{{ url_for('index') }}">
+            <span>
+              eMOTIONS
+            </span>
+          </a>
+
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class=""> </span>
+          </button>
+
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav">
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('index') }}">Home <span class="sr-only">(current)</span></a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('about') }}"> About</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('service') }}">Services</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('contact') }}">Contact Us</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('login') }}">Log In</a>
+              </li>
+              <li class="nav-item active">
+                <a class="nav-link" href="{{ url_for('register') }}">Register</a>
+              </li>
+            </ul>
+          </div>
+        </nav>
+      </div>
+    </header>
+    <!-- end header section -->
+  </div>
+
+  <!-- service section -->
+  <section class="service_section layout_padding">
+    <div class="container">
+      <div class="heading_container">
+        <h2>
+          Our Services
+        </h2>
+        <p>
+          eMOTIONS is a useful and professional application used to monitor emotions through video calls.
+        </p>
+      </div>
+      <div class="row">
+        <div class="col-md-6 col-lg-3">
+          <div class="box">
+            <div class="img-box">
+              <img src="{{ url_for('static', filename='images/s1.png') }}" alt="">
+            </div>
+            <div class="detail-box">
+              <h5>
+                How does it work?
+              </h5>
+              <p>
+                The app will detect faces and determine their level of interest.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <div class="box">
+            <div class="img-box">
+              <img src="{{ url_for('static', filename='images/s2.png') }}" alt="">
+            </div>
+            <div class="detail-box">
+              <h5>
+                Benefits
+              </h5>
+              <p>
+                Knowing what your employee feel has never been easier.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <div class="box">
+            <div class="img-box">
+              <img src="{{ url_for('static', filename='images/s3.png') }}" alt="">
+            </div>
+            <div class="detail-box">
+              <h5>
+                Why get eMOTIONS?
+              </h5>
+              <p>
+                Ever wondered what interests your employee? we have the answer.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <div class="box">
+            <div class="img-box">
+              <img src="{{ url_for('static', filename='images/s4.png') }}" alt="">
+            </div>
+            <div class="detail-box">
+              <h5>
+                Want to know more?
+              </h5>
+              <p>
+                Send us an email at emotions3305@gmail.com or call +00 1234567890.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>    
+  </section>
+  <!-- end service section -->
+
+  <div class="footer_container">
+    <!-- info section -->
+
+    <section class="info_section ">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-6 col-lg-3 ">
+            <div class="info_detail">
+              <h4>
+                eMOTIONS
+              </h4>
+              <p>
+                eMOTIONS will help you improve the way you provide information to your employee. If you know how they feel, you know what you're doing right.
+              </p>
+            </div>
+          </div>
+          <div class="col-md-6 col-lg-2 mx-auto">
+            <div class="info_link_box">
+              <h4>
+                Links
+              </h4>
+              <div class="info_links">
+                <a class="" href="{{ url_for('index') }}">
+                  Home
+                </a>
+                <a class="" href="{{ url_for('about') }}">
+                  About
+                </a>
+                <a class="" href="{{ url_for('service') }}">
+                  Services
+                </a>
+                <a class="" href="{{ url_for('contact') }}">
+                  Contact Us
+                </a>
+                <a class="" href="{{ url_for('login') }}">
+                  Log In
+                </a>
+                <a class="" href="{{ url_for('register') }}">
+                  Register
+              </a>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6 col-lg-3 ">
+            <h4>
+              Subscribe
+            </h4>
+            <form action="#">
+              <input type="text" placeholder="Enter email" />
+              <button type="submit">
+                Subscribe
+              </button>
+            </form>
+          </div>
+          <div class="col-md-6 col-lg-3 mb-0 ml-auto">
+            <div class="info_contact">
+              <h4>
+                Address
+              </h4>
+              <div class="contact_link_box">
+                <a href="">
+                  <i class="fa fa-map-marker" aria-hidden="true"></i>
+                  <span>
+                    UCC Western Gateway Building
+                  </span>
+                </a>
+                <a href="">
+                  <i class="fa fa-phone" aria-hidden="true"></i>
+                  <span>
+                    Call +00 1234567890
+                  </span>
+                </a>
+                <a href="">
+                  <i class="fa fa-envelope" aria-hidden="true"></i>
+                  <span>
+                    emotions3305@gmail.com
+                  </span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- end info section -->
+
+    <!-- footer section -->
+    <footer class="footer_section">
+      <div class="container">
+        <p>
+          &copy; <span id="displayYear"></span> All Rights Reserved By
+          <a href="{{ url_for('index') }}">eMOTIONS</a>
+        </p>
+      </div>
+    </footer>
+    <!-- footer section -->
+  </div>
+
+  <!-- jQery -->
+  <script src="{{ url_for('static', filename='js/jquery-3.4.1.min.js') }}"></script>
+  <!-- popper js -->
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous">
+  </script>
+  <!-- bootstrap js -->
+  <script src="{{ url_for('static', filename='js/bootstrap.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/custom.js') }}"></script>
+
+</body>
+
+</html>
